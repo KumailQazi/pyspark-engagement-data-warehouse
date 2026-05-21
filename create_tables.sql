@@ -85,7 +85,11 @@ CREATE TABLE IF NOT EXISTS staging.stg_playback_events (
 )
 USING DELTA
 PARTITIONED BY (event_date)
-LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_playback_events/';
+LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_playback_events/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 CREATE TABLE IF NOT EXISTS staging.stg_sessions (
     session_id      STRING,
@@ -99,7 +103,11 @@ CREATE TABLE IF NOT EXISTS staging.stg_sessions (
 )
 USING DELTA
 PARTITIONED BY (session_date)
-LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_sessions/';
+LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_sessions/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 
 -- --------------------------------------------------------------
@@ -120,7 +128,11 @@ CREATE TABLE IF NOT EXISTS curated.dim_user (
     is_current      BOOLEAN
 )
 USING DELTA
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_user/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_user/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 CREATE TABLE IF NOT EXISTS curated.dim_content (
     content_id      STRING,
@@ -134,7 +146,11 @@ CREATE TABLE IF NOT EXISTS curated.dim_content (
     _loaded_at      TIMESTAMP
 )
 USING DELTA
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_content/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_content/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 CREATE TABLE IF NOT EXISTS curated.dim_date (
     date_key        INT,
@@ -147,7 +163,11 @@ CREATE TABLE IF NOT EXISTS curated.dim_date (
     is_holiday      BOOLEAN
 )
 USING DELTA
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_date/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_date/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 
 -- --------------------------------------------------------------
@@ -172,7 +192,11 @@ CREATE TABLE IF NOT EXISTS curated.fct_playback_events (
 )
 USING DELTA
 PARTITIONED BY (event_date)
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_playback_events/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_playback_events/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 CREATE TABLE IF NOT EXISTS curated.fct_sessions (
     session_id      STRING,
@@ -188,7 +212,11 @@ CREATE TABLE IF NOT EXISTS curated.fct_sessions (
 )
 USING DELTA
 PARTITIONED BY (session_date)
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_sessions/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_sessions/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 CREATE TABLE IF NOT EXISTS curated.fct_user_engagement_daily (
     user_id                 STRING,
@@ -205,7 +233,11 @@ CREATE TABLE IF NOT EXISTS curated.fct_user_engagement_daily (
 )
 USING DELTA
 PARTITIONED BY (activity_date)
-LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_user_engagement_daily/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_user_engagement_daily/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 
 -- --------------------------------------------------------------
@@ -230,7 +262,11 @@ CREATE TABLE IF NOT EXISTS marts.mart_user_engagement_weekly (
 )
 USING DELTA
 PARTITIONED BY (week_start_date)
-LOCATION 'abfss://marts@streamcorplake.dfs.core.windows.net/mart_user_engagement_weekly/';
+LOCATION 'abfss://marts@streamcorplake.dfs.core.windows.net/mart_user_engagement_weekly/'
+TBLPROPERTIES (
+  'delta.deletedFileRetentionDuration' = 'interval 7 days',
+  'delta.logRetentionDuration' = 'interval 30 days'
+);
 
 -- --------------------------------------------------------------
 -- 6. OPTIMIZATION (Run after initial load)
@@ -244,3 +280,11 @@ OPTIMIZE marts.mart_user_engagement_weekly ZORDER BY (segment, user_plan_at_week
 ANALYZE TABLE curated.fct_playback_events COMPUTE STATISTICS FOR ALL COLUMNS;
 ANALYZE TABLE curated.fct_user_engagement_daily COMPUTE STATISTICS FOR ALL COLUMNS;
 ANALYZE TABLE marts.mart_user_engagement_weekly COMPUTE STATISTICS FOR ALL COLUMNS;
+
+-- --------------------------------------------------------------
+-- 7. RETENTION POLICIES (Run as scheduled job)
+-- --------------------------------------------------------------
+
+VACUUM curated.fct_playback_events RETAIN 168 HOURS;
+VACUUM curated.fct_sessions RETAIN 168 HOURS;
+VACUUM curated.fct_user_engagement_daily RETAIN 168 HOURS;

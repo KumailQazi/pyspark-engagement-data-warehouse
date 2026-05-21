@@ -59,7 +59,9 @@ def build_playback_facts(process_date: str):
                     # Cap at 5 minutes to handle client going background
                     when(
                         (unix_timestamp(col("next_event_ts")) - unix_timestamp(col("server_ts"))) > 300,
-                        lit(300)
+                        when(col("next_event_type") == "pause", 
+                             unix_timestamp(col("next_event_ts")) - unix_timestamp(col("server_ts")))
+                        .otherwise(lit(300))
                     ).otherwise(
                         unix_timestamp(col("next_event_ts")) - unix_timestamp(col("server_ts"))
                     )

@@ -10,6 +10,8 @@ import random
 from datetime import datetime, timedelta
 from faker import Faker
 
+random.seed(42)
+Faker.seed(42)
 fake = Faker()
 
 def generate_playback_events(date_str, num_events):

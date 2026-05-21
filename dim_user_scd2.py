@@ -63,12 +63,14 @@ if DeltaTable.isDeltaTable(spark, DIM_PATH):
             df_changes.alias("source"),
             "target.user_id = source.user_id AND target.is_current = True"
         ).whenMatchedUpdate(set={
-            "valid_to": current_timestamp(),
+            "valid_to": col("source.last_updated_ts"),
             "is_current": lit(False)
         }).execute()
 
-        # Insert new records with valid_from = now, valid_to = 9999-12-31, is_current = True
-        df_new_records = df_changes.withColumn("valid_from", current_timestamp())             .withColumn("valid_to", lit("9999-12-31").cast("timestamp"))             .withColumn("is_current", lit(True))
+        # Insert new records with valid_from = last_updated_ts, valid_to = 9999-12-31, is_current = True
+        df_new_records = df_changes.withColumn("valid_from", col("last_updated_ts")) \
+            .withColumn("valid_to", lit("9999-12-31").cast("timestamp")) \
+            .withColumn("is_current", lit(True))
 
         df_new_records.write.format("delta").mode("append").save(DIM_PATH)
 
@@ -78,7 +80,9 @@ if DeltaTable.isDeltaTable(spark, DIM_PATH):
 
 else:
     # Bootstrap dimension on first run
-    df_bootstrap = df_cdc.withColumn("valid_from", current_timestamp())         .withColumn("valid_to", lit("9999-12-31").cast("timestamp"))         .withColumn("is_current", lit(True))
+    df_bootstrap = df_cdc.withColumn("valid_from", col("last_updated_ts")) \
+        .withColumn("valid_to", lit("9999-12-31").cast("timestamp")) \
+        .withColumn("is_current", lit(True))
 
     df_bootstrap.write.format("delta").mode("overwrite").save(DIM_PATH)
     print(f"Dimension bootstrapped with {df_bootstrap.count()} users")
