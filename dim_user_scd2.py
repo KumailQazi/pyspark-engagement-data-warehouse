@@ -12,13 +12,13 @@ from pyspark.sql.functions import (
 )
 from delta.tables import DeltaTable
 
-spark = SparkSession.builder     .appName("Tapmad-DimUserSCD2")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
+spark = SparkSession.builder     .appName("StreamCorp-DimUserSCD2")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
 
 # --------------------------------------------------------------
 # CONFIG
 # --------------------------------------------------------------
-CDC_PATH = "abfss://raw@tapmadlake.dfs.core.windows.net/users/"
-DIM_PATH = "abfss://curated@tapmadlake.dfs.core.windows.net/dim_user/"
+CDC_PATH = "abfss://raw@streamcorplake.dfs.core.windows.net/users/"
+DIM_PATH = "abfss://curated@streamcorplake.dfs.core.windows.net/dim_user/"
 PROCESS_DATE = "2024-01-15"
 
 # --------------------------------------------------------------

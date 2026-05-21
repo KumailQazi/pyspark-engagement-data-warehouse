@@ -1,7 +1,7 @@
 """
 # ============================================================
-# dags/tapmad_engagement_pipeline.py
-# Apache Airflow DAG for Tapmad User Engagement ETL
+# dags/streamcorp_engagement_pipeline.py
+# Apache Airflow DAG for StreamCorp User Engagement ETL
 # ============================================================
 
 from airflow import DAG
@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 default_args = {
     'owner': 'data-engineering',
     'depends_on_past': False,
-    'email': ['data-alerts@tapmad.com'],
+    'email': ['data-alerts@streamcorp.com'],
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 2,
@@ -22,7 +22,7 @@ default_args = {
 }
 
 with DAG(
-    'tapmad_user_engagement_pipeline',
+    'streamcorp_user_engagement_pipeline',
     default_args=default_args,
     description='T-1 batch pipeline for user engagement metrics',
     schedule_interval='0 2 * * *',  # 02:00 UTC daily
@@ -36,7 +36,7 @@ with DAG(
     task_dim_user = DatabricksSubmitRunOperator(
         task_id='dim_user_scd2_merge',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/dim_user_scd2',
                 'base_parameters': {'process_date': '{{ ds }}'}
@@ -48,7 +48,7 @@ with DAG(
     task_dim_content = DatabricksSubmitRunOperator(
         task_id='dim_content_merge',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/dim_content',
                 'base_parameters': {'process_date': '{{ ds }}'}
@@ -60,7 +60,7 @@ with DAG(
     task_bronze_silver = DatabricksSubmitRunOperator(
         task_id='bronze_to_silver',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/bronze_to_silver',
                 'base_parameters': {'process_date': '{{ ds }}'}
@@ -72,7 +72,7 @@ with DAG(
     task_silver_curated = DatabricksSubmitRunOperator(
         task_id='silver_to_curated',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/silver_to_curated',
                 'base_parameters': {'process_date': '{{ ds }}'}
@@ -84,7 +84,7 @@ with DAG(
     task_curated_marts = DatabricksSubmitRunOperator(
         task_id='curated_to_marts',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/curated_to_marts',
                 'base_parameters': {'process_date': '{{ ds }}'}
@@ -103,7 +103,7 @@ with DAG(
     task_optimize = DatabricksSubmitRunOperator(
         task_id='optimize_tables',
         json={
-            'existing_cluster_id': 'tapmad-etl-cluster',
+            'existing_cluster_id': 'streamcorp-etl-cluster',
             'notebook_task': {
                 'notebook_path': '/Repos/etl/optimize_tables',
                 'base_parameters': {'process_date': '{{ ds }}'}

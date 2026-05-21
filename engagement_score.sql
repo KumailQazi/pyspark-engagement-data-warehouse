@@ -8,7 +8,7 @@
 -- --------------------------------------------------------------
 /*
 The Engagement Score is a composite metric (0-100) designed to rank
-users by their holistic engagement with the Tapmad platform.
+users by their holistic engagement with the StreamCorp platform.
 
 Formula (per user, per day):
   Score = (WatchTimePercentile * 0.50) + (FrequencyPercentile * 0.30) + (BreadthPercentile * 0.20)

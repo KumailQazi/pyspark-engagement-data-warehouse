@@ -15,14 +15,14 @@ from pyspark.sql.functions import (
 )
 from delta.tables import DeltaTable
 
-spark = SparkSession.builder     .appName("Tapmad-CuratedToMarts")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
+spark = SparkSession.builder     .appName("StreamCorp-CuratedToMarts")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
 
 # --------------------------------------------------------------
 # CONFIG
 # --------------------------------------------------------------
 PROCESS_DATE = "2024-01-15"
-CURATED_BASE = "abfss://curated@tapmadlake.dfs.core.windows.net"
-MARTS_BASE = "abfss://marts@tapmadlake.dfs.core.windows.net"
+CURATED_BASE = "abfss://curated@streamcorplake.dfs.core.windows.net"
+MARTS_BASE = "abfss://marts@streamcorplake.dfs.core.windows.net"
 
 # --------------------------------------------------------------
 # 1. USER-DAY ENGREGATE

@@ -1,5 +1,5 @@
 -- ============================================================
--- Tapmad Engagement Platform — Delta Lake DDL
+-- StreamCorp Engagement Platform — Delta Lake DDL
 -- Compatible with Spark 3.4+ / Databricks / Azure Fabric
 -- ============================================================
 
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS raw.playback_events (
 )
 USING JSON
 PARTITIONED BY (event_date DATE)
-LOCATION 'abfss://raw@tapmadlake.dfs.core.windows.net/playback_events/';
+LOCATION 'abfss://raw@streamcorplake.dfs.core.windows.net/playback_events/';
 
 CREATE TABLE IF NOT EXISTS raw.users (
     user_id         STRING,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS raw.users (
     last_updated_ts TIMESTAMP
 )
 USING PARQUET
-LOCATION 'abfss://raw@tapmadlake.dfs.core.windows.net/users/';
+LOCATION 'abfss://raw@streamcorplake.dfs.core.windows.net/users/';
 
 CREATE TABLE IF NOT EXISTS raw.content (
     content_id      STRING,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS raw.content (
     publish_ts      TIMESTAMP
 )
 USING PARQUET
-LOCATION 'abfss://raw@tapmadlake.dfs.core.windows.net/content/';
+LOCATION 'abfss://raw@streamcorplake.dfs.core.windows.net/content/';
 
 CREATE TABLE IF NOT EXISTS raw.app_sessions (
     session_id      STRING,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS raw.app_sessions (
 )
 USING PARQUET
 PARTITIONED BY (session_date DATE)
-LOCATION 'abfss://raw@tapmadlake.dfs.core.windows.net/app_sessions/';
+LOCATION 'abfss://raw@streamcorplake.dfs.core.windows.net/app_sessions/';
 
 
 -- --------------------------------------------------------------
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS staging.stg_playback_events (
 )
 USING DELTA
 PARTITIONED BY (event_date)
-LOCATION 'abfss://staging@tapmadlake.dfs.core.windows.net/stg_playback_events/';
+LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_playback_events/';
 
 CREATE TABLE IF NOT EXISTS staging.stg_sessions (
     session_id      STRING,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS staging.stg_sessions (
 )
 USING DELTA
 PARTITIONED BY (session_date)
-LOCATION 'abfss://staging@tapmadlake.dfs.core.windows.net/stg_sessions/';
+LOCATION 'abfss://staging@streamcorplake.dfs.core.windows.net/stg_sessions/';
 
 
 -- --------------------------------------------------------------
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS curated.dim_user (
     is_current      BOOLEAN
 )
 USING DELTA
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/dim_user/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_user/';
 
 CREATE TABLE IF NOT EXISTS curated.dim_content (
     content_id      STRING,
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS curated.dim_content (
     _loaded_at      TIMESTAMP
 )
 USING DELTA
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/dim_content/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_content/';
 
 CREATE TABLE IF NOT EXISTS curated.dim_date (
     date_key        INT,
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS curated.dim_date (
     is_holiday      BOOLEAN
 )
 USING DELTA
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/dim_date/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/dim_date/';
 
 
 -- --------------------------------------------------------------
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS curated.fct_playback_events (
 )
 USING DELTA
 PARTITIONED BY (event_date)
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/fct_playback_events/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_playback_events/';
 
 CREATE TABLE IF NOT EXISTS curated.fct_sessions (
     session_id      STRING,
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS curated.fct_sessions (
 )
 USING DELTA
 PARTITIONED BY (session_date)
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/fct_sessions/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_sessions/';
 
 CREATE TABLE IF NOT EXISTS curated.fct_user_engagement_daily (
     user_id                 STRING,
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS curated.fct_user_engagement_daily (
 )
 USING DELTA
 PARTITIONED BY (activity_date)
-LOCATION 'abfss://curated@tapmadlake.dfs.core.windows.net/fct_user_engagement_daily/';
+LOCATION 'abfss://curated@streamcorplake.dfs.core.windows.net/fct_user_engagement_daily/';
 
 
 -- --------------------------------------------------------------
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS marts.mart_user_engagement_weekly (
 )
 USING DELTA
 PARTITIONED BY (week_start_date)
-LOCATION 'abfss://marts@tapmadlake.dfs.core.windows.net/mart_user_engagement_weekly/';
+LOCATION 'abfss://marts@streamcorplake.dfs.core.windows.net/mart_user_engagement_weekly/';
 
 -- --------------------------------------------------------------
 -- 6. OPTIMIZATION (Run after initial load)

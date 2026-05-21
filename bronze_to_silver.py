@@ -12,15 +12,15 @@ from pyspark.sql.functions import (
 )
 from delta.tables import DeltaTable
 
-spark = SparkSession.builder     .appName("Tapmad-BronzeToSilver")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
+spark = SparkSession.builder     .appName("StreamCorp-BronzeToSilver")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
 
 # --------------------------------------------------------------
 # CONFIG
 # --------------------------------------------------------------
 PROCESS_DATE = "2024-01-15"  # Parameterized in production via Airflow
 LOOKBACK_DAYS = 2            # 48h late arrival window
-RAW_BASE = "abfss://raw@tapmadlake.dfs.core.windows.net"
-STAGING_BASE = "abfss://staging@tapmadlake.dfs.core.windows.net"
+RAW_BASE = "abfss://raw@streamcorplake.dfs.core.windows.net"
+STAGING_BASE = "abfss://staging@streamcorplake.dfs.core.windows.net"
 
 # --------------------------------------------------------------
 # 1. PLAYBACK EVENTS — Deduplicate & Type

@@ -1,11 +1,11 @@
-name: 'tapmad_engagement_dbt'
+name: 'streamcorp_engagement_dbt'
 version: '1.0.0'
 config-version: 2
 
-profile: 'tapmad_databricks'
+profile: 'streamcorp_databricks'
 
 models:
-  tapmad_engagement_dbt:
+  streamcorp_engagement_dbt:
     staging:
       +materialized: view
       +schema: silver

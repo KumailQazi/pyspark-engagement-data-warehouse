@@ -14,15 +14,15 @@ from pyspark.sql.functions import (
 )
 from delta.tables import DeltaTable
 
-spark = SparkSession.builder     .appName("Tapmad-SilverToCurated")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
+spark = SparkSession.builder     .appName("StreamCorp-SilverToCurated")     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")     .getOrCreate()
 
 # --------------------------------------------------------------
 # CONFIG
 # --------------------------------------------------------------
 PROCESS_DATE = "2024-01-15"
 LOOKBACK_DAYS = 2
-STAGING_BASE = "abfss://staging@tapmadlake.dfs.core.windows.net"
-CURATED_BASE = "abfss://curated@tapmadlake.dfs.core.windows.net"
+STAGING_BASE = "abfss://staging@streamcorplake.dfs.core.windows.net"
+CURATED_BASE = "abfss://curated@streamcorplake.dfs.core.windows.net"
 
 # --------------------------------------------------------------
 # 1. PLAYBACK EVENTS — Watch Time Calculation
