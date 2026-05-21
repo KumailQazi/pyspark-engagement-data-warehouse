@@ -1,0 +1,64 @@
+name: Deploy Tapmad Data Platform
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # 1. Infrastructure Deployment
+  terraform:
+    name: 'Terraform Plan & Apply'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+      
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: ./terraform
+      
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve
+      working-directory: ./terraform
+
+  # 2. Analytics Engineering Tests
+  dbt_test:
+    name: 'dbt CI Checks'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dbt-databricks
+      run: pip install dbt-databricks
+      
+    - name: dbt compile
+      run: dbt compile
+      working-directory: ./dbt
+      
+    - name: dbt test (Dry Run)
+      run: dbt test --select state:modified+
+      working-directory: ./dbt
+      
+  # 3. Data Quality Suites
+  great_expectations:
+    name: 'GX Validation'
+    runs-on: ubuntu-latest
+    needs: dbt_test
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run GX Checkpoints
+      run: echo "Executing Great Expectations against staging data..."

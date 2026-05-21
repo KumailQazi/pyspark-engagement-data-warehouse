@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: mart_weekly_engagement
+    description: "Weekly pre-aggregated engagement metrics per user segment, plan, and platform. Built for direct BI consumption."
+    columns:
+      - name: week_start_date
+        description: "The start date of the reporting week."
+        tests:
+          - not_null
+      
+      - name: current_plan
+        description: "The user's subscription plan at the time of viewing (historically tracked via SCD2)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['free', 'basic', 'premium', 'trial']
+              
+      - name: platform
+        description: "The device platform."
+        tests:
+          - not_null
+          
+      - name: wow_watch_time_growth_pct
+        description: "Week-over-week percentage change in watch time."
+        
+      - name: avg_engagement_score
+        description: "Composite score from 0-100 indicating user loyalty and depth."
+        tests:
+          - not_null
+          # Custom data quality check: Ensure the engagement score never breaks the 0-100 bounds
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100

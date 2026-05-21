@@ -1,0 +1,43 @@
+// ============================================================================
+// Real-time Engagement Analytics for Live Sports (e.g., T20 Cricket Final)
+// Engine: Azure Data Explorer (Kusto) / Microsoft Fabric Eventhouse
+// ============================================================================
+
+// 1. Create the real-time target table
+.create table LivePlaybackEvents (
+    event_id: string,
+    user_id: string,
+    content_id: string,
+    event_type: string,
+    event_ts: datetime,
+    server_ts: datetime,
+    platform: string
+)
+
+// 2. Map the incoming JSON from Event Hubs to the table
+.create table LivePlaybackEvents ingestion json mapping 'PlaybackEventsMapping'
+'['
+'    {"column":"event_id", "path":"$.event_id", "datatype":"string"},'
+'    {"column":"user_id", "path":"$.user_id", "datatype":"string"},'
+'    {"column":"content_id", "path":"$.content_id", "datatype":"string"},'
+'    {"column":"event_type", "path":"$.event_type", "datatype":"string"},'
+'    {"column":"event_ts", "path":"$.event_ts", "datatype":"datetime"},'
+'    {"column":"server_ts", "path":"$.server_ts", "datatype":"datetime"},'
+'    {"column":"platform", "path":"$.platform", "datatype":"string"}'
+']'
+
+// 3. Update Policy for Deduplication (Real-time Materialized View)
+// Kafka guarantees at-least-once. We must dedupe in real-time.
+.create materialized-view with (backfill=true) LivePlaybackEvents_Dedup on table LivePlaybackEvents
+{
+    LivePlaybackEvents
+    | summarize arg_max(server_ts, *) by event_id
+}
+
+// 4. Live Dashboard Query: Concurrent Viewers and Platform Breakdown (Last 5 Minutes)
+// This query would power a real-time Grafana/PowerBI dashboard refreshing every 5 seconds.
+LivePlaybackEvents_Dedup
+| where server_ts > ago(5m)
+| where event_type in ("play_start", "heartbeat")
+| summarize ConcurrentViewers = dcount(user_id) by platform, bin(server_ts, 1m)
+| render timechart with (title="Live Concurrent Viewers by Platform", ytitle="Unique Users")
