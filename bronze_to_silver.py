@@ -47,9 +47,15 @@ def process_playback_events(process_date: str):
         df_raw = spark.read.json(raw_path)
 
         # Basic typing and derived columns
-        df_typed = df_raw             .withColumn("event_date", to_date(col("event_ts")))             .withColumn("is_late_arrival", 
-                when(spark_abs(datediff(to_date(col("server_ts")), to_date(col("event_ts")))) > 1, lit(True)
-                ).otherwise(lit(False))             .withColumn("_ingest_ts", current_timestamp())
+        df_typed = df_raw \
+            .withColumn("event_date", to_date(col("event_ts"))) \
+            .withColumn("is_late_arrival", 
+                when(
+                    datediff(to_date(col("server_ts")), to_date(col("event_ts"))) > 1, 
+                    lit(True)
+                ).otherwise(lit(False))
+            ) \
+            .withColumn("_ingest_ts", current_timestamp())
 
         # Deduplicate: keep latest server_ts per event_id
         win = Window.partitionBy("event_id").orderBy(col("server_ts").desc())

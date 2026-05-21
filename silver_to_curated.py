@@ -10,7 +10,8 @@ from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import (
     col, lead, lag, when, coalesce, sum as spark_sum, count as spark_count,
     countDistinct, max as spark_max, min as spark_min, datediff,
-    unix_timestamp, from_unixtime, to_date, lit, row_number, abs as spark_abs
+    unix_timestamp, from_unixtime, to_date, lit, row_number, abs as spark_abs,
+    broadcast
 )
 from delta.tables import DeltaTable
 
@@ -68,8 +69,10 @@ def build_playback_facts(process_date: str):
         # Join to content dimension to cap VOD at duration
         df_content = spark.read.format("delta").load(f"{CURATED_BASE}/dim_content")
 
+        # Broadcast hint: content dimension is ~80K rows, fits in driver memory.
+        # Prevents shuffle join on 100M row fact table.
         df_with_duration = df_with_watch.join(
-            df_content.select("content_id", "duration_sec", "content_type"),
+            broadcast(df_content.select("content_id", "duration_sec", "content_type")),
             on="content_id",
             how="left"
         )
@@ -88,6 +91,13 @@ def build_playback_facts(process_date: str):
             "platform", "country_code", "event_date", "is_late_arrival",
             "watch_time_sec"
         )
+
+        # Data Quality Checks
+        from data_quality import validate_playback_events
+        is_valid, checks = validate_playback_events(df_final)
+        if not is_valid:
+            failed = [name for name, actual, threshold in checks if actual > threshold]
+            raise ValueError(f"Data quality checks failed: {failed}")
 
         # Idempotent MERGE into curated fact
         fact_path = f"{CURATED_BASE}/fct_playback_events"

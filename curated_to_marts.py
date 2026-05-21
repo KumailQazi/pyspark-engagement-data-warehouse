@@ -176,14 +176,19 @@ def build_weekly_mart(process_date: str):
     df_with_user = df_weekly.join(df_user, on="user_id", how="left")         .withColumnRenamed("current_plan", "user_plan_at_week_start")         .withColumnRenamed("status", "user_status_at_week_start")
 
     # WoW change
-    df_wow = df_with_user.join(df_prev, on="user_id", how="left")         .withColumn("week_over_week_change_pct",
-            when(col("prev_week_watch_time").isNull() | (col("prev_week_watch_time") == 0), lit(None))
-            .otherwise(spark_round((col("total_watch_time_min") - col("prev_week_watch_time")) / col("prev_week_watch_time") * 100, 2))
+    df_wow = df_with_user.join(df_prev, on="user_id", how="left") \
+        .withColumn("week_over_week_change_pct",
+            when(col("prev_week_watch_time").isNull(), lit(None))  # No prior data
+            .when(col("prev_week_watch_time") == 0, lit(999999.99))  # Activation: infinite % change, capped
+            .otherwise(
+                spark_round((col("total_watch_time_min") - col("prev_week_watch_time")) / col("prev_week_watch_time") * 100, 2)
+            )
         )
 
     # Engagement trend classification
     df_final = df_wow.withColumn("engagement_trend",
-        when(col("week_over_week_change_pct") > 20, lit("Surging"))
+        when(col("prev_week_watch_time") == 0, lit("Activated"))  # New active user
+        .when(col("week_over_week_change_pct") > 20, lit("Surging"))
         .when(col("week_over_week_change_pct") > 5, lit("Growing"))
         .when(col("week_over_week_change_pct") < -20, lit("At Risk"))
         .when(col("week_over_week_change_pct") < -5, lit("Declining"))
